@@ -1,21 +1,35 @@
 #!/bin/bash
+# Update the package lists for upgrades and new package installations
 sudo apt update -y
-wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc
-echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
-sudo apt update -y
-sudo apt install temurin-17-jdk -y
-/usr/bin/java --version
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Install the OpenJDK version 11 JDK package
+sudo apt install openjdk-17-jdk -y
+
+# Download the Jenkins repository signing key and save it to '/usr/share/keyrings/jenkins-keyring.asc'
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+
+# Add the Jenkins repository to the system's software sources list
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Update the package lists to include packages from the newly added Jenkins repository
 sudo apt-get update -y
+
+# Install Jenkins from the added repository
 sudo apt-get install jenkins -y
+
+# Start the Jenkins service
 sudo systemctl start jenkins
+
+# Check and display the status of the Jenkins service
 sudo systemctl status jenkins
 
 #install docker
 sudo apt-get update
 sudo apt-get install docker.io -y
-sudo usermod -aG docker ubuntu  
+sudo usermod -aG docker ubuntu
 newgrp docker
 sudo chmod 777 /var/run/docker.sock
 docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
@@ -45,4 +59,3 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 sudo apt-get install unzip -y
 unzip awscliv2.zip
 sudo ./aws/install
-
